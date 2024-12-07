@@ -19,27 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.Emoji;
-import org.telegram.messenger.FileLog;
-import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
-import org.telegram.messenger.Utilities;
-import org.telegram.ui.ActionBar.ActionBar;
-import org.telegram.ui.ActionBar.ActionBarMenu;
-import org.telegram.ui.ActionBar.ActionBarMenuItem;
-import org.telegram.ui.ActionBar.BaseFragment;
-import org.telegram.ui.ActionBar.Theme;
-import org.telegram.ui.ActionBar.ThemeDescription;
+import org.telegram.messenger.*;
+import org.telegram.ui.ActionBar.*;
 import org.telegram.ui.Cells.DividerCell;
 import org.telegram.ui.Cells.LetterSectionCell;
 import org.telegram.ui.Cells.TextSettingsCell;
@@ -51,51 +37,23 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
-public class CountrySelectActivity extends BaseFragment {
+public class AppSelectActivity extends BaseFragment {
 
-    public interface CountrySelectActivityDelegate {
-        void didSelectCountry(Country country);
+    public interface AppSelectActivityDelegate {
+        void didSelectCountry(AppID AppID);
     }
 
     private RecyclerListView listView;
     private EmptyTextProgressView emptyView;
-    private CountryAdapter listViewAdapter;
-    private CountrySearchAdapter searchListViewAdapter;
+    private AppIDAdapter listViewAdapter;
 
-    private boolean searchWas;
-    private boolean searching;
-    private boolean needPhoneCode;
+    private AppSelectActivityDelegate delegate;
 
-    private boolean disableAnonymousNumbers;
-
-    private CountrySelectActivityDelegate delegate;
-    private ArrayList<Country> existingCountries;
-
-    public CountrySelectActivity(boolean phoneCode) {
-        this(phoneCode, null);
-    }
-    public CountrySelectActivity(boolean phoneCode, ArrayList<Country> existingCountries) {
+    public AppSelectActivity() {
         super();
-        if (existingCountries != null && !existingCountries.isEmpty()) {
-            this.existingCountries = new ArrayList<>(existingCountries);
-        }
-        needPhoneCode = phoneCode;
-    }
-
-    public void setDisableAnonymousNumbers(boolean disableAnonymousNumbers) {
-        this.disableAnonymousNumbers = disableAnonymousNumbers;
     }
 
     @Override
@@ -118,7 +76,7 @@ public class CountrySelectActivity extends BaseFragment {
     public View createView(Context context) {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(false);
-        actionBar.setTitle(LocaleController.getString(R.string.ChooseCountry));
+        actionBar.setTitle(LocaleController.getString(R.string.SelectAppId));
 
         actionBar.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
         actionBar.setItemsColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), false);
@@ -133,51 +91,8 @@ public class CountrySelectActivity extends BaseFragment {
                 }
             }
         });
-
-        ActionBarMenu menu = actionBar.createMenu();
-        ActionBarMenuItem item = menu.addItem(0, R.drawable.ic_ab_search).setIsSearchField(true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
-            @Override
-            public void onSearchExpand() {
-                searching = true;
-            }
-
-            @Override
-            public void onSearchCollapse() {
-                searchListViewAdapter.search(null);
-                searching = false;
-                searchWas = false;
-                listView.setAdapter(listViewAdapter);
-                listView.setFastScrollVisible(true);
-            }
-
-            @Override
-            public void onTextChanged(EditText editText) {
-                String text = editText.getText().toString();
-                if (TextUtils.isEmpty(text)) {
-                    searchListViewAdapter.search(null);
-                    searchWas = false;
-                    listView.setAdapter(listViewAdapter);
-                    listView.setFastScrollVisible(true);
-                    return;
-                }
-
-                searchListViewAdapter.search(text);
-                if (text.length() != 0) {
-                    searchWas = true;
-                }
-            }
-        });
-        item.setSearchFieldHint(LocaleController.getString(R.string.Search));
-
-        actionBar.setSearchTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText), true);
-        actionBar.setSearchTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), false);
-        actionBar.setSearchCursorColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-
-        searching = false;
-        searchWas = false;
-
-        listViewAdapter = new CountryAdapter(context, disableAnonymousNumbers);
-        searchListViewAdapter = new CountrySearchAdapter(context, listViewAdapter.getCountries());
+        
+        listViewAdapter = new AppIDAdapter(context);
 
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
@@ -200,23 +115,19 @@ public class CountrySelectActivity extends BaseFragment {
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
         listView.setOnItemClickListener((view, position) -> {
-            Country country;
-            if (searching && searchWas) {
-                country = searchListViewAdapter.getItem(position);
-            } else {
-                int section = listViewAdapter.getSectionForPosition(position);
-                int row = listViewAdapter.getPositionInSectionForPosition(position);
-                if (row < 0 || section < 0) {
-                    return;
-                }
-                country = listViewAdapter.getItem(section, row);
+            AppID appID;
+            int section = listViewAdapter.getSectionForPosition(position);
+            int row = listViewAdapter.getPositionInSectionForPosition(position);
+            if (row < 0 || section < 0) {
+                return;
             }
+            appID = listViewAdapter.getItem(section, row);
             if (position < 0) {
                 return;
             }
             finishFragment();
-            if (country != null && delegate != null) {
-                delegate.didSelectCountry(country);
+            if (appID != null && delegate != null) {
+                delegate.didSelectCountry(appID);
             }
         });
 
@@ -240,59 +151,43 @@ public class CountrySelectActivity extends BaseFragment {
         }
     }
 
-    public void setCountrySelectActivityDelegate(CountrySelectActivityDelegate delegate) {
+    public void setAppSelectActivityDelegate(AppSelectActivityDelegate delegate) {
         this.delegate = delegate;
     }
 
-    public static class Country {
+    public static class AppID {
         public String name;
-        public String defaultName;
-        public String code;
         public String shortname;
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Country that = (Country) o;
-            return Objects.equals(name, that.name) && Objects.equals(code, that.code);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, code);
-        }
+        public String appId;
+        public String appHash;
     }
 
-    public class CountryAdapter extends RecyclerListView.SectionsAdapter {
+    public class AppIDAdapter extends RecyclerListView.SectionsAdapter {
         private final static int TYPE_COUNTRY = 0, TYPE_DIVIDER = 1;
 
         private Context mContext;
-        private HashMap<String, ArrayList<Country>> countries = new HashMap<>();
-        private ArrayList<String> sortedCountries = new ArrayList<>();
+        private final HashMap<String, ArrayList<AppID>> apps = new HashMap<>();
+        private ArrayList<String> sortedApps = new ArrayList<>();
 
-        public CountryAdapter(Context context, boolean disableAnonymousNumbers) {
+        public AppIDAdapter(Context context) {
             mContext = context;
-
             try {
-                InputStream stream = ApplicationLoader.applicationContext.getResources().getAssets().open("countries.txt");
+                InputStream stream = ApplicationLoader.applicationContext.getResources().getAssets().open("clients.txt");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] args = line.split(";");
-                    Country c = new Country();
+                    AppID c = new AppID();
                     c.name = args[2];
-                    c.code = args[0];
-                    c.shortname = args[1];
-                    if (c.shortname.equals("FT") && disableAnonymousNumbers) {
-                        continue;
-                    }
+                    c.appId = args[0];
+                    c.appHash = args[1];
+                    c.shortname = "";
                     String n = c.name.substring(0, 1).toUpperCase();
-                    ArrayList<Country> arr = countries.get(n);
+                    ArrayList<AppID> arr = apps.get(n);
                     if (arr == null) {
                         arr = new ArrayList<>();
-                        countries.put(n, arr);
-                        sortedCountries.add(n);
+                        apps.put(n, arr);
+                        sortedApps.add(n);
                     }
                     arr.add(c);
                 }
@@ -301,7 +196,6 @@ public class CountrySelectActivity extends BaseFragment {
             } catch (Exception e) {
                 FileLog.e(e);
             }
-
             Comparator<String> comparator;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 Collator collator = Collator.getInstance(LocaleController.getInstance().getCurrentLocale() != null ? LocaleController.getInstance().getCurrentLocale() : Locale.getDefault());
@@ -309,23 +203,24 @@ public class CountrySelectActivity extends BaseFragment {
             } else {
                 comparator = String::compareTo;
             }
-            Collections.sort(sortedCountries, comparator);
-
-            for (ArrayList<Country> arr : countries.values()) {
-                Collections.sort(arr, (country, country2) -> comparator.compare(country.name, country2.name));
+            
+            Collections.sort(sortedApps, comparator);
+            
+            for (ArrayList<AppID> arr : apps.values()) {
+                Collections.sort(arr, (AppID, country2) -> comparator.compare(AppID.name, country2.name));
             }
         }
 
-        public HashMap<String, ArrayList<Country>> getCountries() {
-            return countries;
+        public HashMap<String, ArrayList<AppID>> getCountries() {
+            return apps;
         }
 
         @Override
-        public Country getItem(int section, int position) {
-            if (section < 0 || section >= sortedCountries.size()) {
+        public AppID getItem(int section, int position) {
+            if (section < 0 || section >= sortedApps.size()) {
                 return null;
             }
-            ArrayList<Country> arr = countries.get(sortedCountries.get(section));
+            ArrayList<AppID> arr = apps.get(sortedApps.get(section));
             if (position < 0 || position >= arr.size()) {
                 return null;
             }
@@ -334,19 +229,19 @@ public class CountrySelectActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder, int section, int row) {
-            ArrayList<Country> arr = countries.get(sortedCountries.get(section));
+            ArrayList<AppID> arr = apps.get(sortedApps.get(section));
             return row < arr.size();
         }
 
         @Override
         public int getSectionCount() {
-            return sortedCountries.size();
+            return sortedApps.size();
         }
 
         @Override
         public int getCountForSection(int section) {
-            int count = countries.get(sortedCountries.get(section)).size();
-            if (section != sortedCountries.size() - 1) {
+            int count = apps.get(sortedApps.get(section)).size();
+            if (section != sortedApps.size() - 1) {
                 count++;
             }
             return count;
@@ -376,16 +271,16 @@ public class CountrySelectActivity extends BaseFragment {
         @Override
         public void onBindViewHolder(int section, int position, RecyclerView.ViewHolder holder) {
             if (holder.getItemViewType() == TYPE_COUNTRY) {
-                ArrayList<Country> arr = countries.get(sortedCountries.get(section));
-                Country c = arr.get(position);
+                ArrayList<AppID> arr = apps.get(sortedApps.get(section));
+                AppID c = arr.get(position);
                 TextSettingsCell settingsCell = (TextSettingsCell) holder.itemView;
-                settingsCell.setTextAndValue(Emoji.replaceEmoji(getCountryNameWithFlag(c), settingsCell.getTextView().getPaint().getFontMetricsInt(), AndroidUtilities.dp(20), false), needPhoneCode ? "+" + c.code : null, false);
+                settingsCell.setTextAndValue(getCountryNameWithFlag(c), null, false);
             }
         }
 
         @Override
         public int getItemViewType(int section, int position) {
-            ArrayList<Country> arr = countries.get(sortedCountries.get(section));
+            ArrayList<AppID> arr = apps.get(sortedApps.get(section));
             return position < arr.size() ? TYPE_COUNTRY : TYPE_DIVIDER;
         }
 
@@ -393,138 +288,15 @@ public class CountrySelectActivity extends BaseFragment {
         public String getLetter(int position) {
             int section = getSectionForPosition(position);
             if (section == -1) {
-                section = sortedCountries.size() - 1;
+                section = sortedApps.size() - 1;
             }
-            return sortedCountries.get(section);
+            return sortedApps.get(section);
         }
 
         @Override
         public void getPositionForScrollProgress(RecyclerListView listView, float progress, int[] position) {
             position[0] = (int) (getItemCount() * progress);
             position[1] = 0;
-        }
-    }
-
-    public class CountrySearchAdapter extends RecyclerListView.SelectionAdapter {
-
-        private Context mContext;
-        private Timer searchTimer;
-        private ArrayList<Country> searchResult;
-        private List<Country> countryList = new ArrayList<>();
-        private Map<Country, List<String>> countrySearchMap = new HashMap<>();
-
-        public CountrySearchAdapter(Context context, HashMap<String, ArrayList<Country>> countries) {
-            mContext = context;
-
-            for (List<Country> list : countries.values()) {
-                for (Country country : list) {
-                    countryList.add(country);
-                    List<String> keys = new ArrayList<>(Arrays.asList(country.name.split(" ")));
-                    if (country.defaultName != null) {
-                        keys.addAll(Arrays.asList(country.defaultName.split(" ")));
-                    }
-                    countrySearchMap.put(country, keys);
-                }
-            }
-        }
-
-        public void search(final String query) {
-            if (query == null) {
-                searchResult = null;
-            } else {
-                try {
-                    if (searchTimer != null) {
-                        searchTimer.cancel();
-                    }
-                } catch (Exception e) {
-                    FileLog.e(e);
-                }
-                searchTimer = new Timer();
-                searchTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        try {
-                            searchTimer.cancel();
-                            searchTimer = null;
-                        } catch (Exception e) {
-                            FileLog.e(e);
-                        }
-                        processSearch(query);
-                    }
-                }, 100, 300);
-            }
-        }
-
-        private void processSearch(final String query) {
-            Utilities.searchQueue.postRunnable(() -> {
-
-                String q = query.trim().toLowerCase();
-                if (q.length() == 0) {
-                    updateSearchResults(new ArrayList<>());
-                    return;
-                }
-                ArrayList<Country> resultArray = new ArrayList<>();
-                for (Country country : countryList) {
-                    for (String key : countrySearchMap.get(country)) {
-                        if (key.toLowerCase().startsWith(q)) {
-                            resultArray.add(country);
-                            break;
-                        }
-                    }
-                }
-                updateSearchResults(resultArray);
-            });
-        }
-
-        private void updateSearchResults(final ArrayList<Country> arrCounties) {
-            AndroidUtilities.runOnUIThread(() -> {
-                if (!searching) {
-                    return;
-                }
-                searchResult = arrCounties;
-                if (searchWas && listView != null && listView.getAdapter() != searchListViewAdapter) {
-                    listView.setAdapter(searchListViewAdapter);
-                    listView.setFastScrollVisible(false);
-                }
-                notifyDataSetChanged();
-            });
-        }
-
-        @Override
-        public boolean isEnabled(RecyclerView.ViewHolder holder) {
-            return true;
-        }
-
-        @Override
-        public int getItemCount() {
-            if (searchResult == null) {
-                return 0;
-            }
-            return searchResult.size();
-        }
-
-        public Country getItem(int i) {
-            if (searchResult == null || i < 0 || i >= searchResult.size()) {
-                return null;
-            }
-            return searchResult.get(i);
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new RecyclerListView.Holder(createSettingsCell(mContext));
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            Country c = searchResult.get(position);
-            TextSettingsCell settingsCell = (TextSettingsCell) holder.itemView;
-            settingsCell.setTextAndValue(Emoji.replaceEmoji(getCountryNameWithFlag(c), settingsCell.getTextView().getPaint().getFontMetricsInt(), AndroidUtilities.dp(20), false), needPhoneCode ? "+" + c.code : null, false);
-        }
-
-        @Override
-        public int getItemViewType(int i) {
-            return 0;
         }
     }
 
@@ -551,7 +323,7 @@ public class CountrySelectActivity extends BaseFragment {
         return view;
     }
 
-    private static CharSequence getCountryNameWithFlag(Country c) {
+    private static CharSequence getCountryNameWithFlag(AppID c) {
         SpannableStringBuilder sb = new SpannableStringBuilder();
         String flag = LocaleController.getLanguageFlag(c.shortname);
         if (flag != null) {

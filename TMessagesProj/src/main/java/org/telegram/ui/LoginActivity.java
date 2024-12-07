@@ -1939,12 +1939,15 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         private AnimatedPhoneNumberEditText phoneField;
         private TextView titleView;
         private TextViewSwitcher countryButton;
+        private TextViewSwitcher appIDButton;
         private OutlineTextContainerView countryOutlineView;
+        private OutlineTextContainerView appIdOutlineView;
         private OutlineTextContainerView phoneOutlineView;
         private TextView plusTextView;
         private TextView subtitleView;
         private View codeDividerView;
         private ImageView chevronRight;
+        private ImageView chevronRight2;
         private CheckBoxCell syncContactsBox;
         private CheckBoxCell testBackendCheckBox;
 
@@ -1998,6 +2001,20 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 return tv;
             });
 
+            appIDButton = new TextViewSwitcher(context);
+            appIDButton.setFactory(() -> {
+                TextView tv = new TextView(context);
+                tv.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(12), AndroidUtilities.dp(16), AndroidUtilities.dp(12));
+                tv.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+                tv.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+                tv.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+                tv.setMaxLines(1);
+                tv.setSingleLine(true);
+                tv.setEllipsize(TextUtils.TruncateAt.END);
+                tv.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_HORIZONTAL);
+                return tv;
+            });
+
             Animation anim = AnimationUtils.loadAnimation(context, R.anim.text_in);
             anim.setInterpolator(Easings.easeInOutQuad);
             countryButton.setInAnimation(anim);
@@ -2005,11 +2022,20 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             chevronRight = new ImageView(context);
             chevronRight.setImageResource(R.drawable.msg_inputarrow);
 
+            chevronRight2 = new ImageView(context);
+            chevronRight2.setImageResource(R.drawable.msg_inputarrow);
+
             LinearLayout countryButtonLinearLayout = new LinearLayout(context);
             countryButtonLinearLayout.setOrientation(HORIZONTAL);
             countryButtonLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
             countryButtonLinearLayout.addView(countryButton, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f, 0, 0, 0, 0));
             countryButtonLinearLayout.addView(chevronRight, LayoutHelper.createLinearRelatively(24, 24, 0, 0, 0, 14, 0));
+
+            LinearLayout appButtonLinearLayout = new LinearLayout(context);
+            appButtonLinearLayout.setOrientation(HORIZONTAL);
+            appButtonLinearLayout.setGravity(Gravity.CENTER_VERTICAL);
+            appButtonLinearLayout.addView(appIDButton, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f, 0, 0, 0, 0));
+            appButtonLinearLayout.addView(chevronRight2, LayoutHelper.createLinearRelatively(24, 24, 0, 0, 0, 14, 0));
 
             countryOutlineView = new OutlineTextContainerView(context);
             countryOutlineView.setText(getString(R.string.Country));
@@ -2387,6 +2413,18 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 }
                 return false;
             });
+            appIdOutlineView = new OutlineTextContainerView(context);
+            appIdOutlineView.setText(getString(R.string.AppID));
+            appIdOutlineView.addView(appButtonLinearLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP, 0, 0, 0, 0));
+            appIdOutlineView.setForceUseCenter(true);
+            appIdOutlineView.setFocusable(true);
+            appIdOutlineView.setOnFocusChangeListener((v, hasFocus) -> appIdOutlineView.animateSelection(hasFocus ? 1 : 0));
+            addView(appIdOutlineView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 58, 16, 24, 16, 14));
+            appIdOutlineView.setOnClickListener(view -> {
+                AppSelectActivity fragment = new AppSelectActivity();
+                fragment.setAppSelectActivityDelegate(this::selectApp);
+                presentFragment(fragment);
+            });
 
             int bottomMargin = 72;
             if (newAccount && activityMode == MODE_LOGIN) {
@@ -2430,6 +2468,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     loadCountries();
                 });
             }
+
             if (bottomMargin > 0 && !AndroidUtilities.isSmallScreen()) {
                 Space bottomSpacer = new Space(context);
                 bottomSpacer.setMinimumHeight(AndroidUtilities.dp(bottomMargin));
@@ -2607,6 +2646,9 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             chevronRight.setColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
             chevronRight.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1));
 
+            chevronRight2.setColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+            chevronRight2.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1));
+
             plusTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
 
             codeField.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
@@ -2659,6 +2701,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
             MessagesController.getGlobalMainSettings().edit().putString("phone_code_last_matched_" + country.code, country.shortname).apply();
         }
+
+        public void selectApp(AppSelectActivity.AppID app) {
+            BuildVars.APP_ID = Integer.parseInt(app.appId);
+            BuildVars.APP_HASH = app.appHash;
+
+            setAppButtonText(app.name);
+        }
+
 
         private String countryCodeForHint;
         private void setCountryHint(String code, CountrySelectActivity.Country country) {
@@ -2739,6 +2789,16 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             CharSequence prevText = countryButton.getCurrentView().getText();
             countryButton.setText(cs, !(TextUtils.isEmpty(cs) && TextUtils.isEmpty(prevText)) && !Objects.equals(prevText, cs));
             countryOutlineView.animateSelection(cs != null ? 1f : 0f);
+        }
+
+        private void setAppButtonText(CharSequence cs) {
+            Animation anim = AnimationUtils.loadAnimation(ApplicationLoader.applicationContext, countryButton.getCurrentView().getText() != null && cs == null ? R.anim.text_out_down : R.anim.text_out);
+            anim.setInterpolator(Easings.easeInOutQuad);
+            appIDButton.setOutAnimation(anim);
+
+            CharSequence prevText = appIDButton.getCurrentView().getText();
+            appIDButton.setText(cs, !(TextUtils.isEmpty(cs) && TextUtils.isEmpty(prevText)) && !Objects.equals(prevText, cs));
+            appIdOutlineView.animateSelection(cs != null ? 1f : 0f);
         }
 
         private void setCountry(HashMap<String, String> languageMap, String country) {
