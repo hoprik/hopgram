@@ -6,7 +6,7 @@
  * Copyright Nikolai Kudashov, 2013-2018.
  */
 
-package org.telegram.ui;
+package ru.hoprik.hopgram.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;

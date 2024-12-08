@@ -2,4 +2,5 @@
 <resources>
     <string name="SelectAppId">Select app</string>
     <string name="AppID">App</string>
+    <string name="HopgramSettings">Hopgram settings</string>
 </resources>
