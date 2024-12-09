@@ -3,4 +3,10 @@
     <string name="SelectAppId">Select app</string>
     <string name="AppID">App</string>
     <string name="HopgramSettings">Hopgram settings</string>
+    <string name="GeneralSettings">General settings</string>
+    <string name="HopgramAbout">About hopgram</string>
+    <string name="AppHopgramName">Hopgram</string>
+    <string name="AppHopgramDescription">Hopgram is a fork of the official client with features that are not included in the version conditions.</string>
+    <string name="HopgramChannel">Channel</string>
+    <string name="SourceCode">Source Code</string>
 </resources>

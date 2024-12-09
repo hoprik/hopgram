@@ -2,4 +2,11 @@
 <resources>
     <string name="SelectAppId">Выбрать приложение</string>
     <string name="AppID">Приложение</string>
+    <string name="HopgramSettings">Настройки hopgram</string>
+    <string name="GeneralSettings">Основные</string>
+    <string name="HopgramAbout">О hopgram</string>
+    <string name="AppHopgramName">Hopgram</string>
+    <string name="AppHopgramDescription">Hopgram — форк официального клиента с фишками, которых нет в стандартной версии.</string>
+    <string name="HopgramChannel">Телеграм канал</string>
+    <string name="SourceCode">Исходный код</string>
 </resources>
