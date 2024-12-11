@@ -163,7 +163,6 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_bots;
 import org.telegram.tgnet.tl.TL_fragment;
-import org.telegram.tgnet.tl.TL_payments;
 import org.telegram.tgnet.tl.TL_stars;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -280,8 +279,7 @@ import org.telegram.ui.bots.BotLocation;
 import org.telegram.ui.bots.BotWebViewAttachedSheet;
 import org.telegram.ui.bots.ChannelAffiliateProgramsFragment;
 import org.telegram.ui.bots.SetupEmojiStatusSheet;
-import ru.hoprik.hopgram.ui.AppSelectActivity;
-import ru.hoprik.hopgram.ui.HopgramSettingsActivity;
+import ru.hoprik.hopgram.ui.settings.HopgramSettingsActivity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

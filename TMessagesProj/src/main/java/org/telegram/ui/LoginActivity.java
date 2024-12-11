@@ -195,7 +195,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LoginActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
     public final static boolean ENABLE_PASTED_TEXT_PROCESSING = false;
     private final static int SHOW_DELAY = SharedConfig.getDevicePerformanceClass() <= SharedConfig.PERFORMANCE_CLASS_AVERAGE ? 150 : 100;
-
+    private static AppSelectActivity.AppID appID = new AppSelectActivity.AppID();
+    static {
+        appID.name = "Telegram";
+        appID.appId = "6";
+        appID.appHash = "eb06d4abfb49dc3eeb1aeb98ae0f581e";
+        appID.shortname = "tg";
+    }
     public final static int AUTH_TYPE_MESSAGE = 1,
             AUTH_TYPE_SMS = 2,
             AUTH_TYPE_FLASH_CALL = 3,
@@ -1658,6 +1664,11 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         MessagesController.getInstance(currentAccount).cleanup();
         UserConfig.getInstance(currentAccount).syncContacts = syncContacts;
         UserConfig.getInstance(currentAccount).setCurrentUser(res.user);
+        SharedPreferences.Editor editor = UserConfig.getInstance(currentAccount).getPreferences().edit();
+        editor.putString("AppName", appID.name);
+        editor.putString("AppID", appID.appId);
+        editor.putString("AppHash", appID.appHash);
+        editor.apply();
         UserConfig.getInstance(currentAccount).saveConfig(true);
         MessagesStorage.getInstance(currentAccount).cleanup(true);
         ArrayList<TLRPC.User> users = new ArrayList<>();
@@ -2705,6 +2716,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         public void selectApp(AppSelectActivity.AppID app) {
             BuildVars.APP_ID = Integer.parseInt(app.appId);
             BuildVars.APP_HASH = app.appHash;
+            appID = app;
 
             setAppButtonText(app.name);
         }

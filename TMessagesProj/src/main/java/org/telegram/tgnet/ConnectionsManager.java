@@ -576,6 +576,14 @@ public class ConnectionsManager extends BaseController {
     }
 
     public void init(int version, int layer, int apiId, String deviceModel, String systemVersion, String appVersion, String langCode, String systemLangCode, String configPath, String logPath, String regId, String cFingerprint, int timezoneOffset, long userId, boolean userPremium, boolean enablePushConnection) {
+        UserConfig config = UserConfig.getInstance(UserConfig.selectedAccount);
+        if (config == null){
+
+        }
+        SharedPreferences p = config.getPreferences();
+        BuildVars.APP_ID = Integer.parseInt(p.getString("AppID", String.valueOf(BuildVars.APP_ID)));
+        BuildVars.APP_HASH = p.getString("AppHash", String.valueOf(BuildVars.APP_HASH));
+
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
         String proxyAddress = preferences.getString("proxy_ip", "");
         String proxyUsername = preferences.getString("proxy_user", "");

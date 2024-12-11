@@ -9,4 +9,6 @@
     <string name="AppHopgramDescription">Hopgram — форк официального клиента с фишками, которых нет в стандартной версии.</string>
     <string name="HopgramChannel">Телеграм канал</string>
     <string name="SourceCode">Исходный код</string>
+    <string name="Navbar">Боковая панель</string>
+    <string name="SelectEmoji">Выбрать эмодзи пак</string>
 </resources>

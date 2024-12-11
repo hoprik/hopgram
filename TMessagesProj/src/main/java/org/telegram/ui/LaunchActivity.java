@@ -1410,6 +1410,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         ConnectionsManager.getInstance(currentAccount).setAppPaused(true, false);
         UserConfig.selectedAccount = account;
         UserConfig.getInstance(0).saveConfig(false);
+        SharedPreferences p = UserConfig.getInstance(account).getPreferences();
+        BuildVars.APP_ID = Integer.parseInt(p.getString("AppID", String.valueOf(BuildVars.APP_ID)));
+        BuildVars.APP_HASH = p.getString("AppHash", String.valueOf(BuildVars.APP_HASH));
 
         checkCurrentAccount();
         if (AndroidUtilities.isTablet()) {

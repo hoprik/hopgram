@@ -9,4 +9,6 @@
     <string name="AppHopgramDescription">Hopgram is a fork of the official client with features that are not included in the version conditions.</string>
     <string name="HopgramChannel">Channel</string>
     <string name="SourceCode">Source Code</string>
+    <string name="Navbar">Navigation bar</string>
+    <string name="SelectEmoji">Select emoji pack</string>
 </resources>

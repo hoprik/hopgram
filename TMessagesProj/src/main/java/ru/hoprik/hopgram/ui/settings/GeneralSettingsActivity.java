@@ -1,15 +1,25 @@
-package ru.hoprik.hopgram.ui;
+package ru.hoprik.hopgram.ui.settings;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.os.Build;
+import android.preference.Preference;
+import android.text.SpannableStringBuilder;
+import android.text.style.ReplacementSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.messenger.*;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
@@ -18,36 +28,42 @@ import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
+import ru.hoprik.hopgram.ui.AppSelectActivity;
 import ru.hoprik.hopgram.ui.components.HeaderInfoCell;
 
 import static org.telegram.messenger.LocaleController.getString;
 
-public class HopgramSettingsActivity extends BaseFragment {
+public class GeneralSettingsActivity extends BaseFragment {
     RecyclerListView listView;
     private int rowCount = 0;
+    private int appRow;
+    private int emojiRow;
+    private int navbarRow;
 
-    private int appInfoRow;
+    private int switchAppRow;
 
-    private int settingsRow;
-    private int aboutRow;
+    private int switchEmojiRow;
 
-    private int generalsRow;
-    private int channelRow;
-    private int sourcecodeRow;
+    private ListAdapter adapter;
+
+    private String appName;
     @SuppressWarnings("FieldCanBeLocal")
     private LinearLayoutManager layoutManager;
-    public HopgramSettingsActivity(){
+    public GeneralSettingsActivity(){
         super();
     }
 
     @Override
     public boolean onFragmentCreate() {
-        appInfoRow = rowCount++;
-        settingsRow = rowCount++;
-        generalsRow = rowCount++;
-        aboutRow = rowCount++;
-        channelRow = rowCount++;
-        sourcecodeRow = rowCount++;
+        appRow = rowCount++;
+        switchAppRow = rowCount++;
+        emojiRow = rowCount++;
+        switchEmojiRow = rowCount++;
+        navbarRow = rowCount++;
+
+        SharedPreferences p = UserConfig.getInstance(UserConfig.selectedAccount).getPreferences();
+        appName = p.getString("AppName", "Telegram");
+
 
         return super.onFragmentCreate();
     }
@@ -71,12 +87,12 @@ public class HopgramSettingsActivity extends BaseFragment {
                 }
             }
         });
-
+        this.adapter = new ListAdapter(context);
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
         listView = new RecyclerListView(context);
-        listView.setAdapter(new ListAdapter(context));
+        listView.setAdapter(this.adapter);
         listView.setLayoutManager(layoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false) {
             @Override
             public boolean supportsPredictiveItemAnimations() {
@@ -87,15 +103,34 @@ public class HopgramSettingsActivity extends BaseFragment {
         listView.setVerticalScrollBarEnabled(false);
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         listView.setOnItemClickListener(((view, position) -> {
-            if (position == channelRow){
-                MessagesController.getInstance(currentAccount).openByUserName(("hoprikgram"), this, 1);
-            }
-            if (position == sourcecodeRow){
-                Browser.openUrl(getParentActivity(), "https://github.com/hoprik/hopgram.git");
+            if (position == switchAppRow){
+                AppSelectActivity fragment = new AppSelectActivity();
+                fragment.setAppSelectActivityDelegate(this::selectApp);
+                presentFragment(fragment);
             }
         }));
 
         return fragmentView;
+    }
+
+    public void selectApp(AppSelectActivity.AppID app) {
+        ConnectionsManager.getInstance(currentAccount).setAppPaused(true, false);
+        BuildVars.APP_ID = Integer.parseInt(app.appId);
+        BuildVars.APP_HASH = app.appHash;
+        appName = app.name;
+
+        ConnectionsManager.getInstance(currentAccount).setAppPaused(false, false);
+
+        SharedPreferences.Editor editor = UserConfig.getInstance(currentAccount).getPreferences().edit();
+        editor.putString("AppName", app.name);
+        editor.putString("AppID", app.appId);
+        editor.putString("AppHash", app.appHash);
+        editor.apply();
+        UserConfig.getInstance(currentAccount).saveConfig(true);
+        this.adapter.notifyDataSetChanged();
+        listView.destroyDrawingCache();
+        listView.setVisibility(ListView.INVISIBLE);
+        listView.setVisibility(ListView.VISIBLE);
     }
 
     public class ListAdapter extends RecyclerListView.SelectionAdapter{
@@ -108,8 +143,8 @@ public class HopgramSettingsActivity extends BaseFragment {
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return !(position == aboutRow || position == settingsRow || position == generalsRow ||
-                    position == appInfoRow || position == channelRow || position == sourcecodeRow);
+            return !(position == appRow || position == emojiRow || position == navbarRow ||
+                    position == switchEmojiRow || position == switchAppRow);
         }
 
         @Override
@@ -132,11 +167,6 @@ public class HopgramSettingsActivity extends BaseFragment {
                     view = new TextCell(mContext, resourceProvider);
                     view.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
                     break;
-                case 2:
-                    view = new HeaderInfoCell(mContext);
-                    view.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
-                    break;
-                case 3:
                 default:
                     view = new TextInfoPrivacyCell(mContext, resourceProvider);
                     view.setBackgroundDrawable(Theme.getThemedDrawableByKey(mContext, R.drawable.greydivider_bottom, Theme.key_windowBackgroundGrayShadow));
@@ -151,39 +181,33 @@ public class HopgramSettingsActivity extends BaseFragment {
             switch (holder.getItemViewType()){
                 case 0:
                     HeaderCell headerCell = (HeaderCell) holder.itemView;
-                    if (position == settingsRow) {
-                        headerCell.setText(getString("Settings", R.string.Settings));
-                    } else if (position == aboutRow) {
-                        headerCell.setText(getString("About", R.string.HopgramAbout));
+                    if (position == appRow) {
+                        headerCell.setText(getString("AppID", R.string.AppID));
+                    } else if (position == emojiRow) {
+                        headerCell.setText(getString("Emoji", R.string.Emoji));
+                    }else if (position == navbarRow) {
+                        headerCell.setText(getString("Navbar", R.string.Navbar));
                     }
                     break;
                 case 1:
                     TextCell textCell = (TextCell) holder.itemView;
-                    if (position == generalsRow){
-                        textCell.setTextAndIcon(getString("GeneralSettings", R.string.GeneralSettings), R.drawable.msg_settings, true);
-                    } else if (position == channelRow){
-                        textCell.setTextAndValueAndIcon(getString("HopgramChannel", R.string.HopgramChannel),"@hoprikgram", R.drawable.notification, false);
-                    }else if (position == sourcecodeRow){
-                        textCell.setTextAndIcon(getString("SourceCode", R.string.SourceCode), R.drawable.msg_hybrid, false);
+                    if (position == switchAppRow){
+                        textCell.setTextAndValueAndIcon(getString("SelectAppId", R.string.SelectAppId), appName, R.drawable.msg_settings, true);
+                    } else if (position == switchEmojiRow) {
+                        CharSequence emoji = Emoji.replaceEmoji("\uD83D\uDE03", textCell.getTextView().getPaint().getFontMetricsInt(), AndroidUtilities.dp(20), false);
+                        textCell.setTextAndValueAndIcon(getString("SelectEmoji", R.string.SelectEmoji), emoji, R.drawable.msg_emoji_activities, false);
                     }
-                    break;
-                case 2:
-                    HeaderInfoCell headerInfoCell = (HeaderInfoCell) holder.itemView;
-                    headerInfoCell.setPadding(0, ActionBar.getCurrentActionBarHeight() + (actionBar.getOccupyStatusBar() ? AndroidUtilities.statusBarHeight : 0) - AndroidUtilities.dp(40), 0, 0);
                     break;
             }
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == aboutRow || position == settingsRow){
+            if (position == appRow || position == emojiRow || position == navbarRow){
                 return 0;
             }
-            if (position == generalsRow || position == channelRow || position == sourcecodeRow){
+            if (position == switchAppRow || position == switchEmojiRow){
                 return 1;
-            }
-            if (position == appInfoRow){
-                return 2;
             }
             return 3;
         }
