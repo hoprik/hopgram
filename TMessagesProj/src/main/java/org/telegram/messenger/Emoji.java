@@ -106,13 +106,15 @@ public class Emoji {
     }
 
     private static void loadEmoji(final byte page, final short page2) {
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        String selectEmoji = preferences.getString("EmojiStyle", "apple");
         if (emojiBmp[page][page2] == null) {
             if (loadingEmoji[page][page2]) {
                 return;
             }
             loadingEmoji[page][page2] = true;
             Utilities.globalQueue.postRunnable(() -> {
-                final Bitmap bitmap = loadBitmap("emoji/microsoft/" + String.format(Locale.US, "%d_%d.png", page, page2));
+                final Bitmap bitmap = loadBitmap("emoji/"+selectEmoji+"/" + String.format(Locale.US, "%d_%d.png", page, page2));
                 if (bitmap != null) {
                     emojiBmp[page][page2] = bitmap;
                     AndroidUtilities.cancelRunOnUIThread(invalidateUiRunnable);
@@ -120,6 +122,15 @@ public class Emoji {
                 }
                 loadingEmoji[page][page2] = false;
             });
+        }
+    }
+
+    public static void reloadEmoji(){
+       emojiBmp = new Bitmap[8][];
+       loadingEmoji = new boolean[8][];
+        for (int a = 0; a < emojiBmp.length; a++) {
+            emojiBmp[a] = new Bitmap[emojiCounts[a]];
+            loadingEmoji[a] = new boolean[emojiCounts[a]];
         }
     }
 

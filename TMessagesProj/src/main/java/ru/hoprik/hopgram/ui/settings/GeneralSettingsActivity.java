@@ -2,15 +2,19 @@ package ru.hoprik.hopgram.ui.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.*;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.Preference;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.DynamicDrawableSpan;
 import android.text.style.ReplacementSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,9 +25,11 @@ import org.telegram.messenger.*;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.HeaderCell;
+import org.telegram.ui.Cells.RadioColorCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
@@ -31,6 +37,14 @@ import org.telegram.ui.Components.RecyclerListView;
 import ru.hoprik.hopgram.ui.AppSelectActivity;
 import ru.hoprik.hopgram.ui.components.HeaderInfoCell;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.telegram.messenger.AndroidUtilities.dp;
+import static org.telegram.messenger.Emoji.drawImgSize;
+import static org.telegram.messenger.Emoji.loadBitmap;
 import static org.telegram.messenger.LocaleController.getString;
 
 public class GeneralSettingsActivity extends BaseFragment {
@@ -108,12 +122,68 @@ public class GeneralSettingsActivity extends BaseFragment {
                 fragment.setAppSelectActivityDelegate(this::selectApp);
                 presentFragment(fragment);
             }
+            if (position == switchEmojiRow){
+                showDialog(createSwitchEmojiDialog(getParentActivity(), null));
+            }
         }));
 
         return fragmentView;
     }
 
-    public void selectApp(AppSelectActivity.AppID app) {
+    private Spannable getPreviewEmoji(String styleEmoji, int alignment, Paint.FontMetricsInt fontMetrics){
+        Spannable s = Spannable.Factory.getInstance().newSpannable("");
+        Emoji.EmojiSpan span;
+        Drawable drawable;
+
+        drawable = new PreviewEmojiDrawable(styleEmoji);
+        span = new Emoji.EmojiSpan(drawable, alignment, fontMetrics);
+        span.emoji = "\uD83D\uDE03";
+        s.setSpan(span, 0, 0, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return s;
+    }
+
+    private AlertDialog createSwitchEmojiDialog(Context parentActivity, Theme.ResourcesProvider provider){
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        String selectEmoji = preferences.getString("EmojiStyle", "apple");
+
+        String[] emojis = new String[]{"Apple", "Microsoft"};
+
+
+        final LinearLayout linearLayout = new LinearLayout(parentActivity);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, null);
+        for (String emoji : emojis) {
+            RadioColorCell cell = new RadioColorCell(parentActivity, provider);
+            cell.setPadding(dp(2), 0, dp(2), 0);
+            cell.setCheckColor(Theme.getColor(Theme.key_radioBackground, provider), Theme.getColor(Theme.key_dialogRadioBackgroundChecked, provider));
+            cell.setTextAndValue(emoji, emoji.toLowerCase().equals(selectEmoji));
+            cell.setOnClickListener(v -> {
+                int count = linearLayout.getChildCount();
+                for (int a1 = 0; a1 < count; a1++) {
+                    View child = linearLayout.getChildAt(a1);
+                    if (child instanceof RadioColorCell) {
+                        ((RadioColorCell) child).setChecked(child == v, true);
+                    }
+                    SharedPreferences.Editor e = preferences.edit();
+                    e.putString("EmojiStyle", emoji.toLowerCase());
+                    e.apply();
+                    Emoji.reloadEmoji();
+                    this.adapter.notifyDataSetChanged();
+                    listView.destroyDrawingCache();
+                    listView.setVisibility(ListView.INVISIBLE);
+                    listView.setVisibility(ListView.VISIBLE);
+                    builder.getDismissRunnable().run();
+                }
+            });
+            linearLayout.addView(cell);
+        }
+        builder.setTitle(LocaleController.getString(R.string.SelectEmoji));
+        builder.setView(linearLayout);
+        builder.setPositiveButton(LocaleController.getString(R.string.Cancel), null);
+        return builder.create();
+    }
+
+    private void selectApp(AppSelectActivity.AppID app) {
         ConnectionsManager.getInstance(currentAccount).setAppPaused(true, false);
         BuildVars.APP_ID = Integer.parseInt(app.appId);
         BuildVars.APP_HASH = app.appHash;
@@ -211,5 +281,60 @@ public class GeneralSettingsActivity extends BaseFragment {
             }
             return 3;
         }
+    }
+
+    public static class PreviewEmojiDrawable extends Emoji.EmojiDrawable{
+        private static Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+        private static Rect rect = new Rect();
+        String styleEmoji;
+        public PreviewEmojiDrawable(String styleEmoji){
+            this.styleEmoji = styleEmoji;
+        }
+        private Bitmap getPreviewEmojiBitmap(String styleEmoji){
+            Bitmap bitmap = null;
+            try {
+                int imageResize;
+                if (AndroidUtilities.density <= 1.0f) {
+                    imageResize = 2;
+                } else {
+                    imageResize = 1;
+                }
+
+                InputStream is = ApplicationLoader.applicationContext.getAssets().open("emoji/"+styleEmoji+"/0_1.png");
+                BitmapFactory.Options opts = new BitmapFactory.Options();
+                opts.inJustDecodeBounds = false;
+                opts.inSampleSize = imageResize;
+                bitmap = BitmapFactory.decodeStream(is, null, opts);
+                is.close();
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            return bitmap;
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            Rect b;
+            b = getBounds();
+            if (!canvas.quickReject(b.left, b.top, b.right, b.bottom, Canvas.EdgeType.AA)) {
+                canvas.drawBitmap(getPreviewEmojiBitmap(styleEmoji), null, b, paint);
+            }
+        }
+
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSPARENT;
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            paint.setAlpha(alpha);
+        }
+
+        @Override
+        public void setColorFilter(ColorFilter cf) {
+
+        }
+
     }
 }
