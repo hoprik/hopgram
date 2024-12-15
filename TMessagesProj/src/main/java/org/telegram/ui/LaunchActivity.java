@@ -8,7 +8,6 @@
 
 package org.telegram.ui;
 
-import static org.telegram.messenger.LocaleController.formatPluralString;
 import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.ui.Components.Premium.LimitReachedBottomSheet.TYPE_ACCOUNTS;
 import static org.telegram.ui.Components.Premium.LimitReachedBottomSheet.TYPE_BOOSTS_FOR_USERS;
@@ -202,6 +201,7 @@ import org.telegram.ui.bots.BotWebViewAttachedSheet;
 import org.telegram.ui.bots.BotWebViewSheet;
 import org.telegram.ui.bots.WebViewRequestProps;
 import org.webrtc.voiceengine.WebRtcAudioTrack;
+import ru.hoprik.hopgram.HopgramStorage;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -396,7 +396,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         getWindow().setBackgroundDrawableResource(R.drawable.transparent);
         flagSecureReason = new FlagSecureReason(getWindow(), () -> SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture);
         flagSecureReason.attach();
-
+        HopgramStorage.load();
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 24) {
             AndroidUtilities.isInMultiwindow = isInMultiWindowMode();

@@ -28,11 +28,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.checkerframework.checker.units.qual.A;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AnimatedEmojiSpan;
 import org.telegram.ui.Components.ColoredImageSpan;
+import ru.hoprik.hopgram.HopgramStorage;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -106,15 +106,13 @@ public class Emoji {
     }
 
     private static void loadEmoji(final byte page, final short page2) {
-        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        String selectEmoji = preferences.getString("EmojiStyle", "apple");
         if (emojiBmp[page][page2] == null) {
             if (loadingEmoji[page][page2]) {
                 return;
             }
             loadingEmoji[page][page2] = true;
             Utilities.globalQueue.postRunnable(() -> {
-                final Bitmap bitmap = loadBitmap("emoji/"+selectEmoji+"/" + String.format(Locale.US, "%d_%d.png", page, page2));
+                final Bitmap bitmap = loadBitmap("emoji/"+ HopgramStorage.emojiStyle+"/" + String.format(Locale.US, "%d_%d.png", page, page2));
                 if (bitmap != null) {
                     emojiBmp[page][page2] = bitmap;
                     AndroidUtilities.cancelRunOnUIThread(invalidateUiRunnable);

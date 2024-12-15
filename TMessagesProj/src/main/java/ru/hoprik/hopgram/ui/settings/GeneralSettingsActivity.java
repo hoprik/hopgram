@@ -4,25 +4,18 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.preference.Preference;
 import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.DynamicDrawableSpan;
-import android.text.style.ReplacementSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.messenger.*;
-import org.telegram.messenger.browser.Browser;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -34,17 +27,12 @@ import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
+import ru.hoprik.hopgram.HopgramStorage;
 import ru.hoprik.hopgram.ui.AppSelectActivity;
-import ru.hoprik.hopgram.ui.components.HeaderInfoCell;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 import static org.telegram.messenger.AndroidUtilities.dp;
-import static org.telegram.messenger.Emoji.drawImgSize;
-import static org.telegram.messenger.Emoji.loadBitmap;
 import static org.telegram.messenger.LocaleController.getString;
 
 public class GeneralSettingsActivity extends BaseFragment {
@@ -164,9 +152,8 @@ public class GeneralSettingsActivity extends BaseFragment {
                     if (child instanceof RadioColorCell) {
                         ((RadioColorCell) child).setChecked(child == v, true);
                     }
-                    SharedPreferences.Editor e = preferences.edit();
-                    e.putString("EmojiStyle", emoji.toLowerCase());
-                    e.apply();
+                    HopgramStorage.emojiStyle = emoji.toLowerCase();
+                    HopgramStorage.saveString("EmojiStyle", emoji.toLowerCase());
                     Emoji.reloadEmoji();
                     this.adapter.notifyDataSetChanged();
                     listView.destroyDrawingCache();
