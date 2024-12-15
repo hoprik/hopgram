@@ -64,7 +64,7 @@ android {
 
     buildTypes {
         debug {
-            debuggable true
+            debuggable false
             jniDebuggable true
             signingConfig signingConfigs.debug
             applicationIdSuffix ".beta"
