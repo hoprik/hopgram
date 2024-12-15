@@ -8,6 +8,7 @@
 
 package org.telegram.ui.Adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.view.View;
@@ -16,13 +17,7 @@ import android.view.ViewGroup;
 import androidx.annotation.Keep;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MediaDataController;
-import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.R;
-import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.*;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.DrawerLayoutContainer;
 import org.telegram.ui.ActionBar.Theme;
@@ -34,6 +29,7 @@ import org.telegram.ui.Cells.DrawerUserCell;
 import org.telegram.ui.Cells.EmptyCell;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.SideMenultItemAnimator;
+import ru.hoprik.hopgram.HopgramStorage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,8 +43,11 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
     private boolean accountsShown;
     public DrawerProfileCell profileCell;
     private SideMenultItemAnimator itemAnimator;
+    @SuppressLint("StaticFieldLeak")
+    public static DrawerLayoutAdapter instance;
 
     public DrawerLayoutAdapter(Context context, SideMenultItemAnimator animator, DrawerLayoutContainer drawerLayoutContainer) {
+        instance = this;
         mContext = context;
         mDrawerLayoutContainer = drawerLayoutContainer;
         itemAnimator = animator;
@@ -100,6 +99,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
     }
 
     private View.OnClickListener onPremiumDrawableClick;
+
     public void setOnPremiumDrawableClick(View.OnClickListener listener) {
         onPremiumDrawableClick = listener;
     }
@@ -190,7 +190,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
                 return 4;
             } else {
                 if (accountNumbers.size() < UserConfig.MAX_ACCOUNT_COUNT) {
-                    if (i == accountNumbers.size()){
+                    if (i == accountNumbers.size()) {
                         return 5;
                     } else if (i == accountNumbers.size() + 1) {
                         return 2;
@@ -260,8 +260,8 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         int helpIcon;
         if (eventType == 0) {
             newGroupIcon = R.drawable.msg_groups_ny;
-            //newSecretIcon = R.drawable.msg_secret_ny;
-            //newChannelIcon = R.drawable.msg_channel_ny;
+            newSecretIcon = R.drawable.msg_secret_ny;
+            newChannelIcon = R.drawable.menu_channel_ny;
             contactsIcon = R.drawable.msg_contacts_ny;
             callsIcon = R.drawable.msg_calls_ny;
             savedIcon = R.drawable.msg_saved_ny;
@@ -270,8 +270,8 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             helpIcon = R.drawable.msg_help_ny;
         } else if (eventType == 1) {
             newGroupIcon = R.drawable.msg_groups_14;
-            //newSecretIcon = R.drawable.msg_secret_14;
-            //newChannelIcon = R.drawable.msg_channel_14;
+            newSecretIcon = R.drawable.menu_secret_14;
+            newChannelIcon = R.drawable.menu_broadcast_14;
             contactsIcon = R.drawable.msg_contacts_14;
             callsIcon = R.drawable.msg_calls_14;
             savedIcon = R.drawable.msg_saved_14;
@@ -280,8 +280,8 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             helpIcon = R.drawable.msg_help;
         } else if (eventType == 2) {
             newGroupIcon = R.drawable.msg_groups_hw;
-            //newSecretIcon = R.drawable.msg_secret_hw;
-            //newChannelIcon = R.drawable.msg_channel_hw;
+            newSecretIcon = R.drawable.menu_secret_hw;
+            newChannelIcon = R.drawable.menu_broadcast_hw;
             contactsIcon = R.drawable.msg_contacts_hw;
             callsIcon = R.drawable.msg_calls_hw;
             savedIcon = R.drawable.msg_saved_hw;
@@ -290,8 +290,8 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             helpIcon = R.drawable.msg_help_hw;
         } else {
             newGroupIcon = R.drawable.msg_groups;
-            //newSecretIcon = R.drawable.msg_secret;
-            //newChannelIcon = R.drawable.msg_channel;
+            newSecretIcon = R.drawable.msg_secret;
+            newChannelIcon = R.drawable.msg_channel;
             contactsIcon = R.drawable.msg_contacts;
             callsIcon = R.drawable.msg_calls;
             savedIcon = R.drawable.msg_saved;
@@ -302,25 +302,63 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         UserConfig me = UserConfig.getInstance(UserConfig.selectedAccount);
         boolean showDivider = false;
         items.add(new Item(16, LocaleController.getString(R.string.MyProfile), R.drawable.left_status_profile));
-//        if (MessagesController.getInstance(UserConfig.selectedAccount).storiesEnabled()) {
-//            items.add(new Item(17, LocaleController.getString(R.string.ProfileStories), R.drawable.msg_menu_stories));
-//            showDivider = true;
-//        }
+        if (me != null && me.isPremium() && HopgramStorage.emojiChangeOnElement) {
+            if (me.getEmojiStatus() != null) {
+                items.add(new Item(15, LocaleController.getString(R.string.ChangeEmojiStatus), R.drawable.msg_status_edit));
+            } else {
+                items.add(new Item(15, LocaleController.getString(R.string.SetEmojiStatus), R.drawable.msg_status_set));
+            }
+            showDivider = true;
+        }
+        if (MessagesController.getInstance(UserConfig.selectedAccount).storiesEnabled() && HopgramStorage.storiesOnElement) {
+            items.add(new Item(17, LocaleController.getString(R.string.ProfileStories), R.drawable.msg_menu_stories));
+            showDivider = true;
+        }
         showDivider = true;
         if (ApplicationLoader.applicationLoaderInstance != null) {
             if (ApplicationLoader.applicationLoaderInstance.extendDrawer(items)) {
                 showDivider = true;
             }
         }
+        TLRPC.TL_attachMenuBots menuBots = MediaDataController.getInstance(UserConfig.selectedAccount).getAttachMenuBots();
+        if (menuBots != null && menuBots.bots != null && HopgramStorage.botsViewOnElement) {
+            for (int i = 0; i < menuBots.bots.size(); i++) {
+                TLRPC.TL_attachMenuBot bot = menuBots.bots.get(i);
+                if (bot.show_in_side_menu) {
+                    items.add(new Item(bot));
+                    showDivider = true;
+                }
+            }
+        }
         if (showDivider) {
             items.add(null); // divider
         }
-        //items.add(new Item(3, LocaleController.getString(R.string.NewSecretChat), newSecretIcon));
-        //items.add(new Item(4, LocaleController.getString(R.string.NewChannel), newChannelIcon));
-//        items.add(new Item(6, LocaleController.getString(R.string.Contacts), contactsIcon));
-//        items.add(new Item(10, LocaleController.getString(R.string.Calls), callsIcon));
-        items.add(new Item(11, LocaleController.getString(R.string.SavedMessages), savedIcon));
+        if (HopgramStorage.newGroupOnElement) {
+            items.add(new Item(2, LocaleController.getString(R.string.NewGroup), newGroupIcon));
+        }
+        if (HopgramStorage.newSecretOnElement) {
+            items.add(new Item(3, LocaleController.getString(R.string.NewSecretChat), newSecretIcon));
+        }
+        if (HopgramStorage.newChannelOnElement) {
+            items.add(new Item(4, LocaleController.getString(R.string.NewChannel), newChannelIcon));
+        }
+        if (HopgramStorage.contactsOnElement) {
+            items.add(new Item(6, LocaleController.getString(R.string.Contacts), contactsIcon));
+        }
+        if (HopgramStorage.callsOnElement) {
+            items.add(new Item(10, LocaleController.getString(R.string.Calls), callsIcon));
+        }
+        if (HopgramStorage.savedOnElement) {
+            items.add(new Item(11, LocaleController.getString(R.string.SavedMessages), savedIcon));
+        }
         items.add(new Item(8, LocaleController.getString(R.string.Settings), settingsIcon));
+        items.add(null); // divider
+        if (HopgramStorage.inviteOnElement) {
+            items.add(new Item(7, LocaleController.getString(R.string.InviteFriends), inviteIcon));
+        }
+        if (HopgramStorage.helpOnElement) {
+            items.add(new Item(13, LocaleController.getString(R.string.TelegramFeatures), helpIcon));
+        }
     }
 
     public boolean click(View view, int position) {

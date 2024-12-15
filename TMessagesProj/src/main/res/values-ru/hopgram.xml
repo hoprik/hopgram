@@ -11,4 +11,5 @@
     <string name="SourceCode">Исходный код</string>
     <string name="Navbar">Боковая панель</string>
     <string name="SelectEmoji">Выбрать эмодзи пак</string>
+    <string name="Bots">Приложения ботов</string>
 </resources>
