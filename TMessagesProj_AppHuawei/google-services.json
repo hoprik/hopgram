@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "32956129301",
+    "project_id": "hopgram",
+    "storage_bucket": "hopgram.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32956129301:android:c4e58484bee1643dbfee1c",
+        "android_client_info": {
+          "package_name": "org.telegram.messenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj3OTwJWFk5WL5SjqR6P7bSrESZI1C0_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32956129301:android:edc9cd559d70d723bfee1c",
+        "android_client_info": {
+          "package_name": "org.telegram.messenger.beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj3OTwJWFk5WL5SjqR6P7bSrESZI1C0_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32956129301:android:59975fb90c6ea87fbfee1c",
+        "android_client_info": {
+          "package_name": "ru.hoprik.hopgram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj3OTwJWFk5WL5SjqR6P7bSrESZI1C0_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32956129301:android:81bf3d3bbf1b1e0ebfee1c",
+        "android_client_info": {
+          "package_name": "ru.hoprik.hopgram.beta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDj3OTwJWFk5WL5SjqR6P7bSrESZI1C0_U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32956129301-b86si1hjuv7ji7ilc3jnaco9qfhdih5v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
