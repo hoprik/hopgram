@@ -2,7 +2,7 @@
 <style>
     @font-face {
         font-family: "Emoji";
-        src: url("seguiemj-1.45-3d.ttf");
+        src: url("twemoji2.ttf");
     }
 </style>
 <script>
@@ -36,9 +36,9 @@
         const canvas = document.createElement('canvas')
         canvas.width = canvas.height = 66
         const ctx = canvas.getContext('2d')
-        ctx.font = '58px Emoji'
+        ctx.font = '54px Emoji'
         // ctx.fillRect(0, 0, 66, 66)
-        ctx.fillText(text, -7, 60 - (ctx.measureText(text)?.actualBoundingBoxDescent || 0) / 6 * 4)
+        ctx.fillText(text, -1, 61 - (ctx.measureText(text)?.actualBoundingBoxDescent || 0) / 6 * 4)
         document.body.appendChild(canvas)
         return new Promise(resolve => canvas.toBlob(resolve))
     }
