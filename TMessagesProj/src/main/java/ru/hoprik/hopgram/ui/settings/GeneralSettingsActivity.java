@@ -247,7 +247,7 @@ public class GeneralSettingsActivity extends BaseFragment {
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         String selectEmoji = preferences.getString("EmojiStyle", "apple");
 
-        String[] emojis = new String[]{"Apple", "Microsoft"};
+        String[] emojis = new String[]{"Apple", "Microsoft", "Microsoft flat", "Google", "Twemoji"};
 
 
         final LinearLayout linearLayout = new LinearLayout(parentActivity);
@@ -257,7 +257,7 @@ public class GeneralSettingsActivity extends BaseFragment {
             RadioColorCell cell = new RadioColorCell(parentActivity, provider);
             cell.setPadding(dp(2), 0, dp(2), 0);
             cell.setCheckColor(Theme.getColor(Theme.key_radioBackground, provider), Theme.getColor(Theme.key_dialogRadioBackgroundChecked, provider));
-            cell.setTextAndValue(emoji, emoji.toLowerCase().equals(selectEmoji));
+            cell.setTextAndValue(emoji, emoji.toLowerCase().replace(" ", "_").equals(selectEmoji));
             cell.setOnClickListener(v -> {
                 int count = linearLayout.getChildCount();
                 for (int a1 = 0; a1 < count; a1++) {
@@ -265,8 +265,8 @@ public class GeneralSettingsActivity extends BaseFragment {
                     if (child instanceof RadioColorCell) {
                         ((RadioColorCell) child).setChecked(child == v, true);
                     }
-                    HopgramStorage.emojiStyle = emoji.toLowerCase();
-                    HopgramStorage.saveString("EmojiStyle", emoji.toLowerCase());
+                    HopgramStorage.emojiStyle = emoji.toLowerCase().replace(" ", "_");
+                    HopgramStorage.saveString("EmojiStyle", emoji.toLowerCase().replace(" ", "_"));
                     Emoji.reloadEmoji();
                     this.adapter.notifyDataSetChanged();
                     listView.destroyDrawingCache();
