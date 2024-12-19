@@ -6,6 +6,7 @@ import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.text.Spannable;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -25,6 +26,7 @@ import org.telegram.ui.Adapters.DrawerLayoutAdapter;
 import org.telegram.ui.Cells.*;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
+import org.telegram.ui.LaunchActivity;
 import ru.hoprik.hopgram.HopgramStorage;
 import ru.hoprik.hopgram.ui.AppSelectActivity;
 
@@ -49,31 +51,35 @@ public class GeneralSettingsActivity extends BaseFragment {
     private String appName;
     @SuppressWarnings("FieldCanBeLocal")
     private LinearLayoutManager layoutManager;
-    public static int newGroupRow;
-    public static int newSecretRow;
-    public static int newChannelRow;
-    public static int botsViewRow;
-    public static int storiesRow;
-    public static int emojiChangeRow;
-    public static int contactsRow;
-    public static int callsRow;
-    public static int savedRow;
-    public static int inviteRow;
-    public static int helpRow;
-    public static boolean newGroupOnElement;
-    public static boolean newSecretOnElement;
-    public static boolean newChannelOnElement;
-    public static boolean botsViewOnElement;
-    public static boolean storiesOnElement;
-    public static boolean emojiChangeOnElement;
-    public static boolean contactsOnElement;
-    public static boolean callsOnElement;
-    public static boolean savedOnElement;
-    public static boolean inviteOnElement;
-    public static boolean helpOnElement;
+    private int newGroupRow;
+    private int newSecretRow;
+    private int newChannelRow;
+    private int botsViewRow;
+    private int storiesRow;
+    private int emojiChangeRow;
+    private int contactsRow;
+    private int callsRow;
+    private int savedRow;
+    private int inviteRow;
+    private int helpRow;
+    private int enableTosSettingsRow;
+    private boolean newGroupOnElement;
+    private boolean newSecretOnElement;
+    private boolean newChannelOnElement;
+    private boolean botsViewOnElement;
+    private boolean storiesOnElement;
+    private boolean emojiChangeOnElement;
+    private boolean contactsOnElement;
+    private boolean callsOnElement;
+    private boolean savedOnElement;
+    private boolean inviteOnElement;
+    private boolean helpOnElement;
+    private boolean enableTosSettings;
+    private HopgramSettingsActivity activity;
 
-    public GeneralSettingsActivity() {
+    public GeneralSettingsActivity(HopgramSettingsActivity activity) {
         super();
+        this.activity = activity;
     }
 
     @Override
@@ -89,9 +95,11 @@ public class GeneralSettingsActivity extends BaseFragment {
         savedOnElement = HopgramStorage.savedOnElement;
         inviteOnElement = HopgramStorage.inviteOnElement;
         helpOnElement = HopgramStorage.helpOnElement;
+        enableTosSettings = HopgramStorage.enableTosSettings;
 
         appRow = rowCount++;
         switchAppRow = rowCount++;
+        enableTosSettingsRow = rowCount++;
 
         emojiRow = rowCount++;
         switchEmojiRow = rowCount++;
@@ -159,74 +167,111 @@ public class GeneralSettingsActivity extends BaseFragment {
             if (position == switchEmojiRow) {
                 showDialog(createSwitchEmojiDialog(getParentActivity(), null));
             }
+            if (position == enableTosSettingsRow){
+                boolean newData = !enableTosSettings;
+                enableTosSettings = newData;
+                HopgramStorage.enableTosSettings = newData;
+                HopgramStorage.saveBoolean("EnableTosSettings", newData);
+                ((TextCheckCell) view).setChecked(newData);
+                this.activity.adapter.notifyDataSetChanged();
+                listView.destroyDrawingCache();
+                listView.setVisibility(ListView.INVISIBLE);
+                listView.setVisibility(ListView.VISIBLE);
+            }
             if (position == newGroupRow) {
                 boolean newData = !newGroupOnElement;
+                newGroupOnElement = newData;
                 HopgramStorage.newGroupOnElement = newData;
                 HopgramStorage.saveBoolean("NewGroupOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
             }
             if (position == newSecretRow) {
                 boolean newData = !newSecretOnElement;
+                newSecretOnElement = newData;
                 HopgramStorage.newSecretOnElement = newData;
                 HopgramStorage.saveBoolean("NewSecretOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == newChannelRow) {
                 boolean newData = !newChannelOnElement;
+                newChannelOnElement = newData;
                 HopgramStorage.newChannelOnElement = newData;
                 HopgramStorage.saveBoolean("NewChannelOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == botsViewRow) {
                 boolean newData = !botsViewOnElement;
+                botsViewOnElement = newData;
                 HopgramStorage.botsViewOnElement = newData;
                 HopgramStorage.saveBoolean("BotsViewOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == storiesRow) {
                 boolean newData = !storiesOnElement;
+                storiesOnElement = newData;
                 HopgramStorage.storiesOnElement = newData;
                 HopgramStorage.saveBoolean("StoriesOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == emojiChangeRow) {
                 boolean newData = !emojiChangeOnElement;
+                emojiChangeOnElement = newData;
                 HopgramStorage.emojiChangeOnElement = newData;
                 HopgramStorage.saveBoolean("EmojiChangeOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == contactsRow) {
                 boolean newData = !contactsOnElement;
+                contactsOnElement = newData;
                 HopgramStorage.contactsOnElement = newData;
                 HopgramStorage.saveBoolean("ContactsOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == callsRow) {
                 boolean newData = !callsOnElement;
+                callsOnElement = newData;
                 HopgramStorage.callsOnElement = newData;
                 HopgramStorage.saveBoolean("CallsOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == savedRow) {
                 boolean newData = !savedOnElement;
+                savedOnElement = newData;
                 HopgramStorage.savedOnElement = newData;
                 HopgramStorage.saveBoolean("SavedOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == inviteRow) {
                 boolean newData = !inviteOnElement;
+                inviteOnElement = newData;
                 HopgramStorage.inviteOnElement = newData;
                 HopgramStorage.saveBoolean("InviteOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
             if (position == helpRow) {
                 boolean newData = !helpOnElement;
+                helpOnElement = newData;
                 HopgramStorage.helpOnElement = newData;
                 HopgramStorage.saveBoolean("HelpOnElement", newData);
                 ((TextCheckCell) view).setChecked(newData);
+                DrawerLayoutAdapter.instance.resetItems();
             }
+            LaunchActivity.instance.sideMenuContainer.invalidate();
+            DrawerLayoutAdapter.instance.resetItems();
+            LaunchActivity.instance.drawerLayoutAdapter.notifyDataSetChanged();
+            LaunchActivity.instance.sideMenuContainer.destroyDrawingCache();
+            LaunchActivity.instance.sideMenuContainer.setVisibility(ListView.INVISIBLE);
+            LaunchActivity.instance.sideMenuContainer.setVisibility(ListView.VISIBLE);
         }));
-        DrawerLayoutAdapter.instance.notifyDataSetChanged();
         return fragmentView;
     }
 
@@ -318,7 +363,7 @@ public class GeneralSettingsActivity extends BaseFragment {
                     position == newGroupRow || position == newSecretRow || position == newChannelRow ||
                     position == botsViewRow || position == storiesRow || position == emojiChangeRow ||
                     position == contactsRow || position == callsRow || position == savedRow ||
-                    position == inviteRow || position == helpRow);
+                    position == inviteRow || position == helpRow || position == enableTosSettingsRow);
         }
 
         @Override
@@ -380,27 +425,29 @@ public class GeneralSettingsActivity extends BaseFragment {
                 case 2:
                     TextCheckCell textCheckCell = (TextCheckCell) holder.itemView;
                     if (position == newGroupRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewGroup), newGroupOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewGroup), newGroupOnElement, true);
                     } else if (position == newSecretRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewSecretChat), newSecretOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewSecretChat), newSecretOnElement, true);
                     } else if (position == newChannelRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewChannel), newChannelOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.NewChannel), newChannelOnElement, true);
                     } else if (position == botsViewRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Bots), botsViewOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Bots), botsViewOnElement, true);
                     } else if (position == storiesRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.ProfileStories), storiesOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.ProfileStories), storiesOnElement, true);
                     } else if (position == emojiChangeRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.SetEmojiStatus), emojiChangeOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.SetEmojiStatus), emojiChangeOnElement, true);
                     } else if (position == contactsRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Contacts), contactsOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Contacts), contactsOnElement, true);
                     } else if (position == callsRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Calls), callsOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Calls), callsOnElement, true);
                     } else if (position == savedRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.SavedMessages), savedOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.SavedMessages), savedOnElement, true);
                     } else if (position == inviteRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.InviteFriends), inviteOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.InviteFriends), inviteOnElement, true);
                     } else if (position == helpRow) {
-                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.TelegramFeatures), helpOnElement, false);
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.TelegramFeatures), helpOnElement, true);
+                    } else if (position == enableTosSettingsRow){
+                        textCheckCell.setTextAndCheck(LocaleController.getString(R.string.TosSettings), enableTosSettings, false);
                     }
                     break;
             }
@@ -417,7 +464,7 @@ public class GeneralSettingsActivity extends BaseFragment {
             if (position == newGroupRow || position == newSecretRow || position == newChannelRow ||
                     position == botsViewRow || position == storiesRow || position == emojiChangeRow ||
                     position == contactsRow || position == callsRow || position == savedRow ||
-                    position == inviteRow || position == helpRow){
+                    position == inviteRow || position == helpRow || position == enableTosSettingsRow){
                 return 2;
             }
             return 3;

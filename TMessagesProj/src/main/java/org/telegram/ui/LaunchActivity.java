@@ -275,7 +275,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     private FireworksOverlay fireworksOverlay;
     private BottomSheetTabsOverlay bottomSheetTabsOverlay;
     public DrawerLayoutContainer drawerLayoutContainer;
-    private DrawerLayoutAdapter drawerLayoutAdapter;
+    public DrawerLayoutAdapter drawerLayoutAdapter;
     private PasscodeViewDialog passcodeDialog;
     private List<PasscodeView> overlayPasscodeViews = new ArrayList<>();
     private TermsOfServiceView termsOfServiceView;
@@ -285,7 +285,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     private RecyclerListView sideMenu;
     private SelectAnimatedEmojiDialog.SelectAnimatedEmojiDialogWindow selectAnimatedEmojiDialog;
     private SideMenultItemAnimator itemAnimator;
-    private FrameLayout sideMenuContainer;
+    public FrameLayout sideMenuContainer;
     private View rippleAbove;
     private IUpdateLayout updateLayout;
     public Dialog getVisibleDialog() {

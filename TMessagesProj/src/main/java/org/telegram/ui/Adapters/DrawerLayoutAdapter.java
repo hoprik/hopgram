@@ -226,7 +226,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         notifyItemMoved(fromIndex, toIndex);
     }
 
-    private void resetItems() {
+    public void resetItems() {
         accountNumbers.clear();
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
             if (UserConfig.getInstance(a).isClientActivated()) {

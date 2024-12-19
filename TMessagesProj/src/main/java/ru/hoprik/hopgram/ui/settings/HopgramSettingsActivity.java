@@ -18,12 +18,14 @@ import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
+import ru.hoprik.hopgram.HopgramStorage;
 import ru.hoprik.hopgram.ui.components.HeaderInfoCell;
 
 import static org.telegram.messenger.LocaleController.getString;
 
 public class HopgramSettingsActivity extends BaseFragment {
     RecyclerListView listView;
+    ListAdapter adapter;
     private int rowCount = 0;
 
     private int appInfoRow;
@@ -32,11 +34,13 @@ public class HopgramSettingsActivity extends BaseFragment {
     private int aboutRow;
 
     private int generalsRow;
+    private int tosRow;
     private int channelRow;
     private int sourcecodeRow;
     @SuppressWarnings("FieldCanBeLocal")
     private LinearLayoutManager layoutManager;
-    public HopgramSettingsActivity(){
+
+    public HopgramSettingsActivity() {
         super();
     }
 
@@ -45,6 +49,7 @@ public class HopgramSettingsActivity extends BaseFragment {
         appInfoRow = rowCount++;
         settingsRow = rowCount++;
         generalsRow = rowCount++;
+        tosRow = rowCount++;
         aboutRow = rowCount++;
         channelRow = rowCount++;
         sourcecodeRow = rowCount++;
@@ -75,8 +80,9 @@ public class HopgramSettingsActivity extends BaseFragment {
         fragmentView = new FrameLayout(context);
         FrameLayout frameLayout = (FrameLayout) fragmentView;
 
+        adapter = new ListAdapter(context);
         listView = new RecyclerListView(context);
-        listView.setAdapter(new ListAdapter(context));
+        listView.setAdapter(adapter);
         listView.setLayoutManager(layoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false) {
             @Override
             public boolean supportsPredictiveItemAnimations() {
@@ -87,13 +93,16 @@ public class HopgramSettingsActivity extends BaseFragment {
         listView.setVerticalScrollBarEnabled(false);
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         listView.setOnItemClickListener(((view, position) -> {
-            if (position == generalsRow){
-                presentFragment(new GeneralSettingsActivity());
+            if (position == generalsRow) {
+                presentFragment(new GeneralSettingsActivity(this));
             }
-            if (position == channelRow){
+            if (position == tosRow){
+                presentFragment(new TosSettingsActivity());
+            }
+            if (position == channelRow) {
                 MessagesController.getInstance(currentAccount).openByUserName(("hoprikgram"), this, 1);
             }
-            if (position == sourcecodeRow){
+            if (position == sourcecodeRow) {
                 Browser.openUrl(getParentActivity(), "https://github.com/hoprik/hopgram.git");
             }
         }));
@@ -101,18 +110,23 @@ public class HopgramSettingsActivity extends BaseFragment {
         return fragmentView;
     }
 
-    public class ListAdapter extends RecyclerListView.SelectionAdapter{
+    public class ListAdapter extends RecyclerListView.SelectionAdapter {
         private Context mContext;
 
-        public ListAdapter(Context context){
+        public ListAdapter(Context context) {
             this.mContext = context;
+            if (!HopgramStorage.enableTosSettings){
+                aboutRow = aboutRow-1;
+                channelRow = channelRow-1;
+                sourcecodeRow = sourcecodeRow-1;
+            }
         }
 
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
             return !(position == aboutRow || position == settingsRow || position == generalsRow ||
-                    position == appInfoRow || position == channelRow || position == sourcecodeRow);
+                    position == appInfoRow || position == channelRow || position == sourcecodeRow || (position == tosRow && HopgramStorage.enableTosSettings) );
         }
 
         @Override
@@ -126,7 +140,7 @@ public class HopgramSettingsActivity extends BaseFragment {
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
             View view;
-            switch (viewType){
+            switch (viewType) {
                 case 0:
                     view = new HeaderCell(mContext, resourceProvider);
                     view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
@@ -151,7 +165,7 @@ public class HopgramSettingsActivity extends BaseFragment {
 
         @Override
         public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
-            switch (holder.getItemViewType()){
+            switch (holder.getItemViewType()) {
                 case 0:
                     HeaderCell headerCell = (HeaderCell) holder.itemView;
                     if (position == settingsRow) {
@@ -162,11 +176,13 @@ public class HopgramSettingsActivity extends BaseFragment {
                     break;
                 case 1:
                     TextCell textCell = (TextCell) holder.itemView;
-                    if (position == generalsRow){
-                        textCell.setTextAndIcon(getString("GeneralSettings", R.string.GeneralSettings), R.drawable.msg_settings, true);
-                    } else if (position == channelRow){
-                        textCell.setTextAndValueAndIcon(getString("HopgramChannel", R.string.HopgramChannel),"@hoprikgram", R.drawable.notification, false);
-                    }else if (position == sourcecodeRow){
+                    if (position == generalsRow) {
+                        textCell.setTextAndIcon(getString("GeneralSettings", R.string.GeneralSettings), R.drawable.msg_settings, HopgramStorage.enableTosSettings);
+                    } else if (position == tosRow && HopgramStorage.enableTosSettings) {
+                        textCell.setTextAndIcon(getString("TosSettings", R.string.TosSettings), R.drawable.msg_block, false);
+                    } else if (position == channelRow) {
+                        textCell.setTextAndValueAndIcon(getString("HopgramChannel", R.string.HopgramChannel), "@hoprikgram", R.drawable.notification, true);
+                    } else if (position == sourcecodeRow) {
                         textCell.setTextAndIcon(getString("SourceCode", R.string.SourceCode), R.drawable.msg_hybrid, false);
                     }
                     break;
@@ -179,13 +195,13 @@ public class HopgramSettingsActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == aboutRow || position == settingsRow){
+            if (position == aboutRow || position == settingsRow) {
                 return 0;
             }
-            if (position == generalsRow || position == channelRow || position == sourcecodeRow){
+            if (position == generalsRow || position == channelRow || position == sourcecodeRow || (position == tosRow && HopgramStorage.enableTosSettings)) {
                 return 1;
             }
-            if (position == appInfoRow){
+            if (position == appInfoRow) {
                 return 2;
             }
             return 3;

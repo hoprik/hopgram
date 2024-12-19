@@ -4,12 +4,20 @@
     <string name="AppID">App</string>
     <string name="HopgramSettings">Hopgram settings</string>
     <string name="GeneralSettings">General settings</string>
+    <string name="TosSettings">Prohibited functions</string>
     <string name="HopgramAbout">About hopgram</string>
     <string name="AppHopgramName">Hopgram</string>
-    <string name="AppHopgramDescription">Hopgram is a fork of the official client with features that are not included in the version conditions.</string>
+    <string name="AppHopgramDescription">Hopgram is a fork of the official client with features that are not included in the version conditions. And inspired by ayugram</string>
     <string name="HopgramChannel">Channel</string>
     <string name="SourceCode">Source Code</string>
     <string name="Navbar">Navigation bar</string>
     <string name="SelectEmoji">Select emoji pack</string>
     <string name="Bots">Bots apps</string>
+    <string name="DeletedMessages">Deleted messages</string>
+    <string name="Premium">Premium</string>
+    <string name="Other">Other…</string>
+    <string name="SaveDeletedMessages">Save deleted messages</string>
+    <string name="LocalPremium">Local premium</string>
+    <string name="DisableAds">Disable ads</string>
+    <string name="RemoveForwardingRestriction">Remove forwarding restriction</string>
 </resources>

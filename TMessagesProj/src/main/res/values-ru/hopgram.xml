@@ -4,12 +4,20 @@
     <string name="AppID">Приложение</string>
     <string name="HopgramSettings">Настройки hopgram</string>
     <string name="GeneralSettings">Основные</string>
+    <string name="TosSettings">Запрещенные функции</string>
     <string name="HopgramAbout">О hopgram</string>
     <string name="AppHopgramName">Hopgram</string>
-    <string name="AppHopgramDescription">Hopgram — форк официального клиента с фишками, которых нет в стандартной версии.</string>
+    <string name="AppHopgramDescription">Hopgram — форк официального клиента с фишками, которых нет в стандартной версии. И вдохновлен ayugram</string>
     <string name="HopgramChannel">Телеграм канал</string>
     <string name="SourceCode">Исходный код</string>
     <string name="Navbar">Боковая панель</string>
     <string name="SelectEmoji">Выбрать эмодзи пак</string>
     <string name="Bots">Приложения ботов</string>
+    <string name="DeletedMessages">Удаленые сообщения</string>
+    <string name="Premium">Премиум</string>
+    <string name="Other">Другое…</string>
+    <string name="SaveDeletedMessages">Сохранять удалённые сообщения</string>
+    <string name="LocalPremium">Локальный премиум</string>
+    <string name="DisableAds">Отключить рекламу</string>
+    <string name="RemoveForwardingRestriction">Снять запрет на пересылку</string>
 </resources>
