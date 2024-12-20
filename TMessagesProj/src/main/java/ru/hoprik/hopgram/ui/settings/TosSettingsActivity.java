@@ -62,6 +62,11 @@ public class TosSettingsActivity extends BaseFragment {
 
     @Override
     public boolean onFragmentCreate() {
+        saveDeleteOnElement = HopgramStorage.saveDeleteOnElement;
+        localPremiumOnElement = HopgramStorage.localPremiumOnElement;
+        disableAdsOnElement = HopgramStorage.disableAdsOnElement;
+        replyMessagesOnElement = HopgramStorage.replyMessagesOnElement;
+
         deleteMessagesRow = rowCount++;
         saveDeleteRow = rowCount++;
         premiumRow = rowCount++;
@@ -69,12 +74,6 @@ public class TosSettingsActivity extends BaseFragment {
         disableAdsRow = rowCount++;
         otherRow = rowCount++;
         replayMessagesRow = rowCount++;
-
-        saveDeleteOnElement = HopgramStorage.saveDeleteOnElement;
-        localPremiumOnElement = HopgramStorage.localPremiumOnElement;
-        disableAdsOnElement = HopgramStorage.disableAdsOnElement;
-        replyMessagesOnElement = HopgramStorage.replyMessagesOnElement;
-
         return super.onFragmentCreate();
     }
 

@@ -99,6 +99,7 @@ import org.telegram.ui.TopicsFragment;
 import org.telegram.ui.bots.BotWebViewAttachedSheet;
 import org.telegram.ui.bots.BotWebViewSheet;
 import org.telegram.ui.bots.WebViewRequestProps;
+import ru.hoprik.hopgram.HopgramStorage;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -827,7 +828,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isPremiumUser(TLRPC.User currentUser) {
-        return !premiumFeaturesBlocked() && currentUser.premium && !isSupportUser(currentUser);
+        return (HopgramStorage.localPremiumOnElement && currentUser == UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser()) || (!premiumFeaturesBlocked() && currentUser.premium && !isSupportUser(currentUser));
     }
 
     public boolean didPressTranscribeButtonEnough() {
@@ -6026,7 +6027,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isChatNoForwards(TLRPC.Chat chat) {
-        if (chat == null) {
+        if (chat == null || HopgramStorage.replyMessagesOnElement) {
             return false;
         }
         if (chat.migrated_to != null) {

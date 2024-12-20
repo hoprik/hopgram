@@ -18,6 +18,7 @@ import com.google.android.exoplayer2.util.Log;
 
 import org.telegram.tgnet.SerializedData;
 import org.telegram.tgnet.TLRPC;
+import ru.hoprik.hopgram.HopgramStorage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -561,9 +562,9 @@ public class UserConfig extends BaseController {
     public boolean isPremium() {
         TLRPC.User user = currentUser;
         if (user == null) {
-            return false;
+            return HopgramStorage.localPremiumOnElement;
         }
-        return user.premium;
+        return HopgramStorage.localPremiumOnElement || user.premium;
     }
 
     public Long getEmojiStatus() {

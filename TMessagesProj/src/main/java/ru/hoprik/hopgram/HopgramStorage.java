@@ -1,6 +1,7 @@
 package ru.hoprik.hopgram;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 import org.telegram.messenger.MessagesController;
 
 public class HopgramStorage {
@@ -22,7 +23,7 @@ public class HopgramStorage {
     public static boolean localPremiumOnElement;
     public static boolean disableAdsOnElement;
     public static boolean replyMessagesOnElement;
-
+    public static long emojiStatus;
     public static void load() {
         preferences = MessagesController.getGlobalMainSettings();
 
@@ -42,10 +43,12 @@ public class HopgramStorage {
 
         enableTosSettings = preferences.getBoolean("EnableTosSettings", false);
 
-        saveDeleteOnElement = preferences.getBoolean("SaveDeleteOnElement;", false);
-        localPremiumOnElement = preferences.getBoolean("LocalPremiumOnElement;", false);
-        disableAdsOnElement = preferences.getBoolean("DisableAdsOnElement;", false);
-        replyMessagesOnElement = preferences.getBoolean("ReplyMessagesOnElement;", false);
+        saveDeleteOnElement = preferences.getBoolean("SaveDeleteOnElement", false);
+        localPremiumOnElement = preferences.getBoolean("LocalPremiumOnElement", false);
+        disableAdsOnElement = preferences.getBoolean("DisableAdsOnElement", false);
+        replyMessagesOnElement = preferences.getBoolean("ReplyMessagesOnElement", false);
+
+        emojiStatus = preferences.getLong("EmojiStatus", -1);
     }
 
     public static void saveString(String name, String data) {
@@ -57,6 +60,12 @@ public class HopgramStorage {
     public static void saveBoolean(String name, boolean data) {
         SharedPreferences.Editor e = preferences.edit();
         e.putBoolean(name, data);
+        e.apply();
+    }
+
+    public static void saveLong(String name, Long data){
+        SharedPreferences.Editor e = preferences.edit();
+        e.putLong(name, data);
         e.apply();
     }
 }
