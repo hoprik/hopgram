@@ -267,7 +267,6 @@ public class GeneralSettingsActivity extends BaseFragment {
             }
             LaunchActivity.instance.sideMenuContainer.invalidate();
             DrawerLayoutAdapter.instance.resetItems();
-            LaunchActivity.instance.drawerLayoutAdapter.notifyDataSetChanged();
             LaunchActivity.instance.sideMenuContainer.destroyDrawingCache();
             LaunchActivity.instance.sideMenuContainer.setVisibility(ListView.INVISIBLE);
             LaunchActivity.instance.sideMenuContainer.setVisibility(ListView.VISIBLE);

@@ -29,11 +29,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Pair;
-import android.util.SparseArray;
-import android.util.SparseBooleanArray;
-import android.util.SparseIntArray;
+import android.util.*;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
@@ -7383,6 +7379,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private boolean checkDeletingTask(boolean runnable) {
+//        Log.d("Debug","Ловим задачу");
         int currentServerTime = getConnectionsManager().getCurrentTime();
 
         if ((currentDeletingTaskMids != null || currentDeletingTaskMediaMids != null) && (runnable || currentDeletingTaskTime != 0 && currentDeletingTaskTime <= currentServerTime)) {
@@ -7394,13 +7391,15 @@ public class MessagesController extends BaseController implements NotificationCe
             LongSparseArray<ArrayList<Integer>> task = currentDeletingTaskMids != null ? currentDeletingTaskMids.clone() : null;
             LongSparseArray<ArrayList<Integer>> taskMedia = currentDeletingTaskMediaMids != null ? currentDeletingTaskMediaMids.clone() : null;
             AndroidUtilities.runOnUIThread(() -> {
-                if (task != null) {
+                if (task != null && !HopgramStorage.saveDeleteOnElement) {
+                    Log.d("Debug","Словил! ответ:"+!HopgramStorage.saveDeleteOnElement);
                     for (int a = 0, N = task.size(); a < N; a++) {
                         ArrayList<Integer> mids = task.valueAt(a);
                         deleteMessages(mids, null, null, task.keyAt(a), 0, true, 0, !mids.isEmpty() && mids.get(0) > 0);
                     }
                 }
-                if (taskMedia != null) {
+                if (taskMedia != null && !HopgramStorage.saveDeleteOnElement) {
+                    Log.d("Debug","Словил! ответ:"+!HopgramStorage.saveDeleteOnElement);
                     final boolean checkViewer = SecretMediaViewer.hasInstance() && SecretMediaViewer.getInstance().isVisible();
                     final MessageObject viewerObject = checkViewer ? SecretMediaViewer.getInstance().getCurrentMessageObject() : null;
                     for (int a = 0, N = taskMedia.size(); a < N; a++) {
@@ -8411,6 +8410,10 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void deleteMessages(ArrayList<Integer> messages, ArrayList<Long> randoms, TLRPC.EncryptedChat encryptedChat, long dialogId, boolean forAll, int mode, boolean cacheOnly, long taskId, TLObject taskRequest, int topicId, boolean movedToScheduled, int movedToScheduledMessageId) {
+//        Log.d("Debug", "Ловим удаление сообщения");
+        if (HopgramStorage.saveDeleteOnElement){
+            return;
+        }
         final boolean scheduled = mode == ChatActivity.MODE_SCHEDULED;
         final boolean quickReplies = mode == ChatActivity.MODE_QUICK_REPLIES;
         if ((messages == null || messages.isEmpty()) && taskId == 0) {
